@@ -1,0 +1,47 @@
+name: Publish audited TubeLab images
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release version
+        required: true
+        default: '2026.10.09'
+  release:
+    types: [published]
+permissions:
+  contents: read
+  packages: write
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Download and verify audited image archive
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          version="${IMAGE_TAG#v}"
+          [[ "$version" =~ ^[0-9][A-Za-z0-9_.-]{0,127}$ ]]
+          mkdir -p release-images
+          gh release download "v$version" --repo "$GITHUB_REPOSITORY" --pattern "TubeLab-Images-$version-linux-amd64.tar.gz" --pattern SHA256SUMS --dir release-images
+          cd release-images
+          sha256sum -c SHA256SUMS
+          docker load --input "TubeLab-Images-$version-linux-amd64.tar.gz"
+          printf 'VERSION=%s\n' "$version" >> "$GITHUB_ENV"
+      - name: Registry login and push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          printf '%s' "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          for name in tubelab-web-api tubelab-login-browser; do
+            target="ghcr.io/$owner/$name"
+            docker tag "$name:$VERSION" "$target:$VERSION"
+            docker tag "$name:$VERSION" "$target:latest"
+            docker push "$target:$VERSION"
+            docker push "$target:latest"
+          done
+          docker logout ghcr.io
