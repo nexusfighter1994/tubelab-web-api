@@ -1,0 +1,13 @@
+data/
+browser-data/
+source/
+node_modules/
+.env
+.env.*
+!.env.example
+!.env-ghcr.example
+__pycache__/
+*.pyc
+*.log
+*.tar
+*.tar.gz

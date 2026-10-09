@@ -1,0 +1,31 @@
+services:
+  tubelab-api:
+    environment:
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set your own HTTPS origin in .env}
+      LOGIN_BROWSER_URL: http://tubelab-browser:6081
+      LOGIN_DESKTOP_URL: http://tubelab-browser:6080
+      LOGIN_BRIDGE_KEY_FILE: /data/browser-bridge.key
+    networks:
+      - default
+      - login
+  tubelab-browser:
+    image: ${TUBELAB_BROWSER_IMAGE:-tubelab-login-browser:2026.10.09}
+    restart: unless-stopped
+    init: true
+    volumes:
+      - ./browser-data:/profile
+      - ./data/browser-bridge.key:/bridge-key:ro
+    networks:
+      - login
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    shm_size: 256m
+    mem_limit: 1200m
+    cpus: 1.0
+networks:
+  login:

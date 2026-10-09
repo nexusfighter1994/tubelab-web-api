@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "imageTags": [
+    "tubelab-web-api:2026.10.09",
+    "tubelab-login-browser:2026.10.09"
+  ],
+  "uniqueLayersScanned": 15,
+  "filesScanned": 27364,
+  "knownCredentialVariantsChecked": 29,
+  "credentialMatches": 0,
+  "privateStateFilesFound": 0,
+  "productionContainersUnchanged": true,
+  "archive": "TubeLab-Images-2026.10.09-linux-amd64.tar.gz",
+  "archiveBytes": 468263395,
+  "sha256": "613dc5773bba0de4ce3bbc5dcfd6d4598aefb80cd541674cdd279ca056ba5227"
+}
